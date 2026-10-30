@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SharePoint Online Theme Studio and Interactive Visualizer</title>
+  <style>
+    :root {
+      --bg-dark: #121319;
+      --panel-dark: #191a24;
+      --card-dark: #222433;
+      --border-dark: #313448;
+      --text-main: #f0f2f8;
+      --text-muted: #9aa1b8;
+      --accent-blue: #0078d4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Top Navigation */
+    header {
+      background: var(--panel-dark);
+      border-bottom: 1px solid var(--border-dark);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon { width: 36px; height: 36px; background: var(--accent-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+    .brand h1 { font-size: 17px; font-weight: 700; color: #fff; }
+    .brand p { font-size: 11px; color: var(--text-muted); }
+
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+    .select-preset, select {
+      background: #ffffff;
+      border: 1px solid #70758f;
+      color: #000000;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    .select-preset option, select option {
+      background: #ffffff;
+      color: #000000;
+      font-weight: normal;
+    }
+    input[type="text"], input[type="password"] {
+      background: #252838;
+      border: 1px solid var(--border-dark);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    .btn {
+      background: #2c2f42;
+      border: 1px solid #434763;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #3b3f57; }
+    .btn-primary { background: #0078d4; border-color: #106ebe; }
+    .btn-primary:hover { background: #106ebe; }
+    .btn-green { background: #0e6038; border-color: #1aa35e; }
+    .btn-green:hover { background: #127947; }
+    .btn-purple { background: #442a6d; border-color: #6944a6; }
+    .btn-purple:hover { background: #553488; }
+
+    /* Main Container */
+    .app-body {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Form & Slots */
+    .sidebar {
+      background: var(--panel-dark);
+      border-right: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .meta-box {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border-dark);
+      background: #1c1e2b;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .meta-row { display: grid; grid-template-columns: 110px 1fr; align-items: center; font-size: 12px; }
+    .meta-row label { color: var(--text-muted); font-weight: 500; }
+    .meta-checks { display: flex; gap: 16px; margin-top: 4px; font-size: 12px; }
+    .meta-checks label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-muted); }
+
+    /* Optional Credentials Expander */
+    .credentials-box {
+      border-bottom: 1px solid var(--border-dark);
+      background: #1a1b26;
+      padding: 8px 18px;
+    }
+    .credentials-toggle {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ba2bc;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .credentials-body {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .credentials-body.open { display: flex; }
+
+    .quick-gen-bar {
+      padding: 8px 18px;
+      background: #202230;
+      border-bottom: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-gen-bar input[type="text"] { width: 90px; font-family: monospace; }
+
+    .search-bar {
+      padding: 8px 18px;
+      background: #181923;
+      border-bottom: 1px solid var(--border-dark);
+    }
+    .search-bar input { width: 100%; font-size: 12px; padding: 4px 8px; }
+
+    .slots-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .category-divider {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: #7b839f;
+      background: #252837;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin: 8px 0 3px 0;
+      text-transform: uppercase;
+    }
+    .category-divider:first-child { margin-top: 0; }
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 86px;
+      align-items: center;
+      padding: 5px 10px;
+      background: #1e202d;
+      border: 1px solid #2d3042;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .slot-row:hover { background: #26293a; border-color: #444963; }
+    .slot-row.active { background: #2c344d; border-color: #0078d4; box-shadow: 0 0 10px rgba(0, 120, 212, 0.4); }
+
+    .color-swatch-wrapper {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid #fff;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .color-swatch-wrapper input[type="color"] {
+      position: absolute;
+      top: -10px; left: -10px;
+      width: 46px; height: 46px;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .color-swatch-display { width: 100%; height: 100%; }
+
+    .slot-info { padding: 0 10px; overflow: hidden; }
+    .slot-name { font-size: 12px; font-weight: 600; color: #fff; }
+    .slot-role { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .slot-hex-input { font-family: monospace; font-size: 11px; padding: 4px 6px; text-transform: uppercase; }
+
+    .sidebar-footer {
+      padding: 10px 16px;
+      background: #1a1b26;
+      border-top: 1px solid var(--border-dark);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Right Preview Area */
+    .preview-pane {
+      background: #0f1015;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Inspector HUD */
+    .inspector-hud {
+      margin: 14px 20px 10px 20px;
+      padding: 12px 16px;
+      background: #1c1d29;
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .hud-swatch {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+    }
+    .hud-details { flex: 1; }
+    .hud-title-line { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+    .hud-slot-name { font-size: 15px; font-weight: 700; color: #fff; }
+    .hud-hex-pill { background: #272a3a; font-family: monospace; font-weight: 700; padding: 2px 8px; border-radius: 4px; color: #61afef; font-size: 12px; }
+    .hud-category-badge { background: #1e392d; color: #4cd98b; font-size: 10.5px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+    .hud-description { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; }
+
+    /* SharePoint Mockup Canvas */
+    .canvas-scroll-wrapper {
+      flex: 1;
+      overflow: auto;
+      padding: 0 20px 24px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .spo-page {
+      width: 100%;
+      max-width: 1050px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid #d2d0ce;
+      transition: background-color 0.2s;
+    }
+
+    /* Interactive Elements & Info (i) Badges */
+    .interactive-element {
+      cursor: pointer;
+      position: relative;
+      transition: outline 0.15s, box-shadow 0.15s;
+    }
+    .interactive-element:hover {
+      outline: 2px dashed #ff6b22 !important;
+      box-shadow: 0 0 10px rgba(255, 107, 34, 0.45);
+    }
+    .interactive-element.inspected-highlight {
+      outline: 3px solid #ff1e3c !important;
+      box-shadow: 0 0 16px rgba(255, 30, 60, 0.65);
+    }
+
+    /* Info Pin (i) Badge */
+    .info-pin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: #1a4a75;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: Georgia, serif;
+      border: 1px solid #ffffff;
+      cursor: pointer;
+      margin-left: 6px;
+      vertical-align: middle;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .info-pin:hover {
+      transform: scale(1.2);
+      background: #ff1e3c;
+    }
+
+    /* Suite Bar */
+    .spo-suite-bar {
+      height: 48px;
+      background: #0078d4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: #fff;
+    }
+    .suite-left { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; }
+    .waffle-icon { width: 18px; height: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .waffle-dot { background: #fff; border-radius: 1px; }
+    .suite-search {
+      width: 360px;
+      height: 30px;
+      background: #fff;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 12px;
+      color: #a19f9d;
+    }
+    .suite-right { display: flex; align-items: center; gap: 14px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #0078d4; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+    /* Site Header */
+    .spo-site-header {
+      padding: 16px 28px;
+      background: #fff;
+      border-bottom: 1px solid #edebe9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .site-branding { display: flex; align-items: center; gap: 12px; }
+    .site-logo { width: 40px; height: 40px; border-radius: 6px; background: #0078d4; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+    .site-title { font-size: 16px; font-weight: 700; color: #323130; display: flex; align-items: center; }
+    .site-subtitle { font-size: 11px; color: #605e5c; }
+    .nav-links { display: flex; gap: 20px; align-items: center; font-size: 12.5px; font-weight: 500; }
+    .nav-tab-active { color: #005a9e; font-weight: 700; position: relative; padding-bottom: 4px; }
+    .nav-tab-active-line { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #0078d4; border-radius: 2px; }
+    .nav-tab { color: #605e5c; }
+
+    /* Hero Banner */
+    .spo-hero {
+      margin: 20px 28px 14px 28px;
+      padding: 24px;
+      background: #106ebe;
+      border-radius: 6px;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hero-tag { display: inline-flex; align-items: center; padding: 4px 8px; background: #71afe5; border-radius: 3px; font-size: 9.5px; font-weight: 700; margin-bottom: 8px; }
+    .hero-h1 { font-size: 21px; font-weight: 700; margin-bottom: 6px; }
+    .hero-p { font-size: 12px; color: #e1dfdd; max-width: 600px; margin-bottom: 16px; line-height: 1.5; }
+    .btn-hero-primary { background: #0078d4; color: #fff; padding: 8px 16px; border-radius: 3px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; margin-right: 10px; }
+    .btn-hero-secondary { background: #f3f2f1; color: #323130; padding: 8px 14px; border-radius: 3px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; }
+
+    /* Quick Links */
+    .section-title { font-size: 15px; font-weight: 700; color: #201f1e; margin: 16px 28px 10px 28px; display: flex; align-items: center; }
+    .quick-links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 0 28px 18px 28px;
+    }
+    .ql-card {
+      background: #faf9f8;
+      border: 1px solid #edebe9;
+      border-radius: 5px;
+      padding: 14px;
+    }
+    .ql-icon-badge { width: 30px; height: 30px; border-radius: 5px; background: #eff6fc; color: #0078d4; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+    .ql-title { font-size: 12px; font-weight: 700; color: #323130; margin-bottom: 3px; }
+    .ql-desc { font-size: 10.5px; color: #605e5c; line-height: 1.4; }
+
+    /* Document Library */
+    .doc-library-card {
+      margin: 0 28px 18px 28px;
+      background: #faf9f8;
+      border: 1px solid #edebe9;
+      border-radius: 5px;
+      padding: 16px;
+    }
+    .doc-cmd-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .doc-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-doc-new { background: #0078d4; color: #fff; padding: 5px 12px; border-radius: 3px; font-size: 11.5px; font-weight: 700; }
+    .btn-doc-sub { background: #f3f2f1; border: 1px solid #d2d0ce; color: #323130; padding: 5px 10px; border-radius: 3px; font-size: 11.5px; font-weight: 600; }
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .doc-table th { text-align: left; padding: 6px; color: #605e5c; font-size: 10.5px; font-weight: 700; border-bottom: 1px solid #edebe9; }
+    .doc-table td { padding: 8px 6px; border-bottom: 1px solid #edebe9; color: #323130; }
+    .doc-row-selected { background: #eff6fc; }
+
+    /* News & Rich Text */
+    .news-section { margin: 0 28px 20px 28px; }
+    .news-h1 { font-size: 15px; font-weight: 700; color: #201f1e; margin-bottom: 4px; display: flex; align-items: center; }
+    .news-body { font-size: 11.5px; color: #323130; line-height: 1.6; margin-bottom: 8px; }
+    .news-link { color: #0078d4; font-weight: 600; text-decoration: none; margin-right: 14px; font-size: 11.5px; }
+    .disabled-chip { background: #f3f2f1; color: #a19f9d; padding: 2px 6px; border-radius: 3px; font-size: 9.5px; margin-right: 10px; }
+    .news-meta { font-size: 10.5px; color: #a19f9d; }
+
+    /* Footer */
+    .spo-footer {
+      background: #f3f2f1;
+      border-top: 1px solid #edebe9;
+      padding: 14px 28px;
+      font-size: 10.5px;
+      color: #605e5c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Modal / Code Export Dialog */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      width: 700px;
+      max-width: 90vw;
+      background: #1c1e2b;
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .modal-box textarea {
+      width: 100%;
+      height: 380px;
+      background: #13141d;
+      border: 1px solid var(--border-dark);
+      color: #71c68f;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      resize: none;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">SP</div>
+      <div>
+        <h1>SharePoint Online Theme Studio</h1>
+        <p>Interactive Fluent UI Color Mapping and Add-SPOTheme Script Generator</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <label style="font-size: 12px; color: var(--text-muted);">Presets:</label>
+      <select id="presetSelect" class="select-preset">
+        <option value="Microsoft Modern Blue">Microsoft Modern Blue</option>
+        <option value="Cyberdyne Crimson HUD">Cyberdyne Crimson HUD (Dark)</option>
+        <option value="Emerald Forest">Emerald Forest</option>
+        <option value="Teal Horizon">Teal Horizon</option>
+        <option value="Midnight Amethyst">Midnight Amethyst</option>
+        <option value="Sunset Amber">Sunset Amber</option>
+        <option value="Obsidian Dark Executive">Obsidian Dark Executive</option>
+      </select>
+      <button class="btn btn-purple" id="btnRandomize">Roll Random Scheme</button>
+      <button class="btn" id="btnToggleDark">Toggle Dark Mode</button>
+      <button class="btn btn-green" id="btnExportScript">Get Add-SPOTheme Script</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Left Sidebar: Settings & 22-Slot Form -->
+    <div class="sidebar">
+      <div class="meta-box">
+        <div class="meta-row">
+          <label>Theme Name:</label>
+          <input type="text" id="inputThemeName" value="Contoso Enterprise Blue">
+        </div>
+        <div class="meta-row">
+          <label>Admin Center:</label>
+          <input type="text" id="inputAdminUrl" value="https://YOURTENANT-admin.sharepoint.com">
+        </div>
+        <div class="meta-row">
+          <label>Target Site:</label>
+          <input type="text" id="inputSiteUrl" value="https://YOURTENANT.sharepoint.com/sites/portal">
+        </div>
+        <div class="meta-checks">
+          <label><input type="checkbox" id="chkIsInverted"> IsInverted ($true)</label>
+          <label><input type="checkbox" id="chkOverwrite" checked> Safe Auto-Update</label>
+        </div>
+      </div>
+
+      <!-- Optional App Registration / Tenant Credentials -->
+      <div class="credentials-box">
+        <div class="credentials-toggle" id="credentialsToggle">
+          <span>App-Only / Service Principal Credentials (Optional)</span>
+          <span id="credentialsArrow">[+]</span>
+        </div>
+        <div class="credentials-body" id="credentialsBody">
+          <div class="meta-row">
+            <label>Tenant ID:</label>
+            <input type="text" id="inputTenantId" placeholder="Directory GUID">
+          </div>
+          <div class="meta-row">
+            <label>Client / App ID:</label>
+            <input type="text" id="inputClientId" placeholder="App Client ID">
+          </div>
+          <div class="meta-row">
+            <label>Client Secret:</label>
+            <input type="password" id="inputClientSecret" placeholder="App Secret Key">
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-gen-bar">
+        <span style="font-size: 11.5px; font-weight: 600; color: #d0d4e4;">Base Brand Hex:</span>
+        <input type="text" id="quickBaseHex" value="#0078d4" maxlength="7">
+        <button class="btn btn-primary" id="btnGenFromBase" style="padding: 4px 10px; font-size: 11px;">Calculate Palette</button>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="slotSearch" placeholder="Filter slots (e.g. primary, neutral, button)...">
+      </div>
+
+      <!-- 22+ Slots Form List -->
+      <div class="slots-list" id="slotsList"></div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-green" id="btnCopyPs1">Copy PowerShell</button>
+        <button class="btn" id="btnCopyJson">Copy JSON</button>
+      </div>
+    </div>
+
+    <!-- Right Pane: Inspector HUD & SharePoint Mockup -->
+    <div class="preview-pane">
+      <!-- Inspector HUD Banner -->
+      <div class="inspector-hud">
+        <div class="hud-swatch" id="hudSwatch" style="background: #0078d4;"></div>
+        <div class="hud-details">
+          <div class="hud-title-line">
+            <span class="hud-slot-name" id="hudSlotName">themePrimary</span>
+            <span class="hud-hex-pill" id="hudHexPill">#0078D4</span>
+            <span class="hud-category-badge" id="hudCategoryBadge">Brand Accent</span>
+          </div>
+          <p class="hud-description" id="hudDescription">
+            Click any (i) info icon or component on the preview page below to inspect its slot and see where this hex code applies in SharePoint Online.
+          </p>
+        </div>
+      </div>
+
+      <!-- Live Interactive Page Canvas -->
+      <div class="canvas-scroll-wrapper">
+        <div class="spo-page" id="spoPage">
+
+          <!-- 1. Suite Bar -->
+          <div class="spo-suite-bar interactive-element" data-slot="themePrimary" data-title="Suite Bar [themePrimary]">
+            <div class="suite-left">
+              <div class="waffle-icon">
+                <div class="waffle-dot"></div><div class="waffle-dot"></div><div class="waffle-dot"></div>
+                <div class="waffle-dot"></div><div class="waffle-dot"></div><div class="waffle-dot"></div>
+                <div class="waffle-dot"></div><div class="waffle-dot"></div><div class="waffle-dot"></div>
+              </div>
+              <span>SharePoint</span>
+              <span style="opacity: 0.6;">|</span>
+              <span style="font-weight: 400;">Contoso Enterprise Hub</span>
+              <span class="info-pin" data-slot="themePrimary" data-title="Suite Bar [themePrimary]" title="Info: Suite Bar uses themePrimary">i</span>
+            </div>
+            <div class="suite-search">
+              <span id="txtSearchPlaceholder">Search across sites, teams, and files...</span>
+            </div>
+            <div class="suite-right">
+              <div class="user-avatar">JM</div>
+            </div>
+          </div>
+
+          <!-- 2. Site Header & Nav -->
+          <div class="spo-site-header interactive-element" data-slot="white" data-title="Site Header [white / neutralPrimary]">
+            <div class="site-branding">
+              <div class="site-logo interactive-element" data-slot="themePrimary" data-title="Site Logo [themePrimary]">C</div>
+              <div>
+                <div class="site-title" id="siteTitleText">
+                  Global Operations and Engineering Portal
+                  <span class="info-pin" data-slot="neutralPrimary" data-title="Site Title [neutralPrimary]" title="Info: Site Title uses neutralPrimary">i</span>
+                </div>
+                <div class="site-subtitle">Modern Enterprise Communication Site</div>
+              </div>
+            </div>
+            <div class="nav-links">
+              <div class="nav-tab-active interactive-element" data-slot="themeDark" data-title="Active Navigation Tab [themeDark / themePrimary]">
+                <span id="navActiveLabel">Home Overview</span>
+                <div class="nav-tab-active-line" id="navActiveLine"></div>
+              </div>
+              <div class="nav-tab interactive-element" data-slot="neutralSecondary" data-title="Inactive Navigation Tab [neutralSecondary]">Documents</div>
+              <div class="nav-tab interactive-element" data-slot="neutralSecondary" data-title="Inactive Navigation Tab [neutralSecondary]">Projects</div>
+              <div class="nav-tab interactive-element" data-slot="neutralSecondary" data-title="Inactive Navigation Tab [neutralSecondary]">Directory</div>
+              <span class="info-pin" data-slot="themePrimary" data-title="Navigation Accent [themePrimary]" title="Info: Active Tab Underline uses themePrimary">i</span>
+            </div>
+          </div>
+
+          <!-- 3. Hero Web Part -->
+          <div class="spo-hero interactive-element" id="heroBanner" data-slot="themeDarkAlt" data-title="Hero WebPart Banner [themeDarkAlt]">
+            <div>
+              <div class="hero-tag interactive-element" id="heroTag" data-slot="themeTertiary" data-title="Hero Tag Pill [themeTertiary]">
+                FEATURED INITIATIVE
+                <span class="info-pin" data-slot="themeDarkAlt" data-title="Hero Background [themeDarkAlt]" title="Info: Hero background uses themeDarkAlt">i</span>
+              </div>
+              <h2 class="hero-h1" id="heroHeading">Modern Cloud Workplace and Operations</h2>
+              <p class="hero-p" id="heroDesc">Empower distributed enterprise teams with unified collaboration, real-time analytics, and secure document workflows.</p>
+              <div>
+                <span class="btn-hero-primary interactive-element" id="heroBtnPrimary" data-slot="themePrimary" data-title="Hero Primary Button [themePrimary / white]">
+                  Launch Dashboard
+                  <span class="info-pin" data-slot="themePrimary" data-title="Primary Button [themePrimary]" title="Info: Primary Action Buttons use themePrimary fill and white text" style="background:#004578;">i</span>
+                </span>
+                <span class="btn-hero-secondary interactive-element" id="heroBtnSecondary" data-slot="neutralLighter" data-title="Hero Secondary Button [neutralLighter / neutralPrimary]">
+                  Documentation
+                  <span class="info-pin" data-slot="neutralLighter" data-title="Secondary Button [neutralLighter]" title="Info: Secondary Buttons use neutralLighter fill and neutralPrimary text" style="background:#607090;">i</span>
+                </span>
+              </div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 16px 20px; border-radius: 6px; text-align: center;">
+              <div style="font-size: 22px; font-weight: 800;">99.98%</div>
+              <div style="font-size: 10px; opacity: 0.85;">Enterprise SLA</div>
+            </div>
+          </div>
+
+          <!-- 4. Quick Links Cards -->
+          <div class="section-title interactive-element" id="secTitle" data-slot="neutralDark" data-title="Section H2 Header [neutralDark]">
+            Operations and Quick Links
+            <span class="info-pin" data-slot="neutralLighterAlt" data-title="Quick Links Cards [neutralLighterAlt]" title="Info: Quick Links cards use neutralLighterAlt surfaces and themePrimary icons">i</span>
+          </div>
+          <div class="quick-links-grid">
+            <div class="ql-card interactive-element" id="card1" data-slot="neutralLighterAlt" data-title="Quick Links Card [neutralLighterAlt / neutralLight]">
+              <div class="ql-icon-badge interactive-element" data-slot="themePrimary" data-title="Card Icon [themePrimary]">IT</div>
+              <div class="ql-title" id="cardTitle1">IT Governance</div>
+              <div class="ql-desc" id="cardDesc1">Security baseline protocols and compliance rules.</div>
+            </div>
+            <div class="ql-card interactive-element" id="card2" data-slot="neutralLighterAlt" data-title="Quick Links Card [neutralLighterAlt / neutralLight]">
+              <div class="ql-icon-badge interactive-element" data-slot="themePrimary" data-title="Card Icon [themePrimary]">KPI</div>
+              <div class="ql-title" id="cardTitle2">Cloud Metrics</div>
+              <div class="ql-desc" id="cardDesc2">Telemetry, cloud consumption, and team velocity.</div>
+            </div>
+            <div class="ql-card interactive-element" id="card3" data-slot="neutralLighterAlt" data-title="Quick Links Card [neutralLighterAlt / neutralLight]">
+              <div class="ql-icon-badge interactive-element" data-slot="themePrimary" data-title="Card Icon [themePrimary]">DIR</div>
+              <div class="ql-title" id="cardTitle3">Team Directory</div>
+              <div class="ql-desc" id="cardDesc3">Organization charts, contacts, and service desk.</div>
+            </div>
+          </div>
+
+          <!-- 5. Document Library -->
+          <div class="doc-library-card interactive-element" id="docLibCard" data-slot="neutralLighterAlt" data-title="Document Library Container [neutralLighterAlt / neutralLight]">
+            <div class="doc-cmd-bar">
+              <div class="doc-actions">
+                <span class="btn-doc-new interactive-element" id="btnDocNew" data-slot="themePrimary" data-title="Command Bar Primary Button [themePrimary]">
+                  New Document
+                  <span class="info-pin" data-slot="themePrimary" data-title="Command Bar [themePrimary]" title="Info: New Document button uses themePrimary fill">i</span>
+                </span>
+                <span class="btn-doc-sub interactive-element" id="btnDocUpload" data-slot="neutralLighter" data-title="Secondary Command Button [neutralLighter / neutralQuaternary]">Upload</span>
+                <span class="btn-doc-sub">Sync</span>
+              </div>
+              <span style="font-size: 11px; color: #605e5c;">Documents Library (24 files)</span>
+            </div>
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px;"></th>
+                  <th>NAME</th>
+                  <th>MODIFIED</th>
+                  <th>AUTHOR</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="doc-row-selected interactive-element" id="rowSelected" data-slot="themeLighterAlt" data-title="Selected Row Background [themeLighterAlt]">
+                  <td style="color: #0078d4; font-weight:bold;">[x]</td>
+                  <td style="font-weight: 600;" id="docName1">
+                    SharePoint-Migration-Strategy-2026.docx
+                    <span class="info-pin" data-slot="themeLighterAlt" data-title="Selected Row [themeLighterAlt]" title="Info: Selected table row uses themeLighterAlt background">i</span>
+                  </td>
+                  <td id="docTime1">Just now</td>
+                  <td>IT Architecture</td>
+                </tr>
+                <tr class="interactive-element" data-slot="neutralLighterAlt" data-title="Table Row [neutralPrimary / neutralSecondary]">
+                  <td style="color: #a19f9d;">[ ]</td>
+                  <td id="docName2">Enterprise-Governance-Matrix.xlsx</td>
+                  <td>Yesterday</td>
+                  <td>Compliance Team</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 6. News & Announcements -->
+          <div class="news-section">
+            <h3 class="news-h1 interactive-element" id="newsH1" data-slot="neutralDark" data-title="News Heading [neutralDark]">
+              Corporate Modern Experience Guidelines
+              <span class="info-pin" data-slot="neutralDark" data-title="Heading [neutralDark]" title="Info: News title uses neutralDark">i</span>
+            </h3>
+            <p class="news-body interactive-element" id="newsBody" data-slot="neutralPrimary" data-title="Body Text [neutralPrimary]">SharePoint Online custom themes define the visual brand palette across modern communication sites, team hubs, and web parts. Every slot corresponds to a specific UI role.</p>
+            <div style="display: flex; align-items: center;">
+              <a href="#" class="news-link interactive-element" id="newsLink" data-slot="themePrimary" data-title="Hyperlink Text [themePrimary]">
+                Read complete governance article
+                <span class="info-pin" data-slot="themePrimary" data-title="Hyperlinks [themePrimary]" title="Info: Hyperlinks use themePrimary">i</span>
+              </a>
+              <span class="disabled-chip interactive-element" id="disabledChip" data-slot="neutralLighter" data-title="Disabled Chip [neutralLighter / neutralTertiary]">Archived</span>
+              <span class="news-meta interactive-element" id="newsMeta" data-slot="neutralTertiary" data-title="Timestamp Metadata [neutralTertiary]">Updated Oct 30, 2026 by Tenant Admin</span>
+            </div>
+          </div>
+
+          <!-- 7. Footer -->
+          <div class="spo-footer interactive-element" id="spoFooter" data-slot="neutralLighter" data-title="Footer [neutralLighter / neutralSecondary]">
+            <span id="footerText">(C) 2026 Contoso Corporation. All rights reserved. | Privacy Policy | Support</span>
+            <span class="info-pin" data-slot="neutralLighter" data-title="Footer [neutralLighter]" title="Info: Footer background uses neutralLighter, text uses neutralSecondary">i</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Dialog Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: 15px; font-weight: 700;" id="modalTitle">PowerShell Add-SPOTheme Script</h2>
+        <button class="btn" id="btnCloseModal">Close</button>
+      </div>
+      <textarea id="modalCode" readonly></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+        <button class="btn btn-green" id="btnModalCopy">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SLOT_METADATA = {
+      "themePrimary": { category: "Brand Accent", role: "Main brand accent. Used for primary CTA buttons, active tabs, hyperlinks, checkboxes, and hero buttons." },
+      "themeLighterAlt": { category: "Brand Accent", role: "Lightest primary tint. Selected table row highlight and subtle hover state." },
+      "themeLighter": { category: "Brand Accent", role: "Light primary tint. Hover state for secondary buttons and pills." },
+      "themeLight": { category: "Brand Accent", role: "Medium-light primary tint. Command bar hover backgrounds and notification tint." },
+      "themeTertiary": { category: "Brand Accent", role: "Mid-tone tint. Hyperlink hover color, tags, and progress bar tracks." },
+      "themeSecondary": { category: "Brand Accent", role: "Secondary primary shade. Secondary button borders and primary button hover." },
+      "themeDarkAlt": { category: "Brand Accent", role: "Dark primary shade. Hero webpart banner background and primary button hover." },
+      "themeDark": { category: "Brand Accent", role: "Dark primary shade. Active nav tab text, pressed buttons, and focused inputs." },
+      "themeDarker": { category: "Brand Accent", role: "Deepest primary shade. Pressed link states and high contrast accents." },
+
+      "neutralLighterAlt": { category: "Neutral Surface", role: "Subtle background surface. Card containers, document library background, and alternating rows." },
+      "neutralLighter": { category: "Neutral Surface", role: "Default page canvas in light mode. Secondary button fills and footer bar." },
+      "neutralLight": { category: "Neutral Surface", role: "Divider lines, subtle card borders, and table column separators." },
+      "neutralQuaternaryAlt": { category: "Neutral Surface", role: "Table borders, list separator lines, and secondary borders." },
+      "neutralQuaternary": { category: "Neutral Surface", role: "Input borders (search box, inputs) and secondary card outlines." },
+      "neutralTertiaryAlt": { category: "Neutral Surface", role: "Disabled icons, placeholder glyphs, and muted indicators." },
+      "neutralTertiary": { category: "Neutral Text", role: "Disabled text on buttons, search placeholder, and muted timestamps." },
+      "neutralSecondary": { category: "Neutral Text", role: "Secondary metadata text ('Modified 2h ago'), subtitles, and inactive nav tabs." },
+      "neutralPrimaryAlt": { category: "Neutral Text", role: "Hover text for dark titles and sub-headings." },
+      "neutralPrimary": { category: "Neutral Text", role: "Main body text, primary list labels, document titles, and headings." },
+      "neutralDark": { category: "Neutral Text", role: "Maximum contrast headings, hero titles, and H1/H2 section headers." },
+      "black": { category: "Neutral Core", role: "Deep black text. In inverted dark themes, mapped to high-contrast white." },
+      "white": { category: "Neutral Core", role: "Page canvas background, card surfaces, and primary button text. In inverted themes, dark canvas." },
+
+      "primaryBackground": { category: "Semantic Extended", role: "Primary canvas surface background." },
+      "primaryText": { category: "Semantic Extended", role: "Primary canvas foreground text." },
+      "bodyBackground": { category: "Semantic Extended", role: "Body container background." },
+      "bodyText": { category: "Semantic Extended", role: "Paragraph body text." },
+      "disabledBackground": { category: "Semantic Extended", role: "Disabled button background." },
+      "disabledText": { category: "Semantic Extended", role: "Disabled button foreground text." }
+    };
+
+    const PRESETS = {
+      "Microsoft Modern Blue": {
+        isInverted: false,
+        slots: {
+          "themePrimary": "#0078d4", "themeLighterAlt": "#eff6fc", "themeLighter": "#deecf9", "themeLight": "#c7e0f4",
+          "themeTertiary": "#71afe5", "themeSecondary": "#2b88d8", "themeDarkAlt": "#106ebe", "themeDark": "#005a9e",
+          "themeDarker": "#004578", "neutralLighterAlt": "#faf9f8", "neutralLighter": "#f3f2f1", "neutralLight": "#edebe9",
+          "neutralQuaternaryAlt": "#e1dfdd", "neutralQuaternary": "#d2d0ce", "neutralTertiaryAlt": "#c8c6c4",
+          "neutralTertiary": "#a19f9d", "neutralSecondary": "#605e5c", "neutralPrimaryAlt": "#3b3a39",
+          "neutralPrimary": "#323130", "neutralDark": "#201f1e", "black": "#000000", "white": "#ffffff",
+          "primaryBackground": "#ffffff", "primaryText": "#323130", "bodyBackground": "#ffffff", "bodyText": "#323130",
+          "disabledBackground": "#f3f2f1", "disabledText": "#a19f9d"
+        }
+      },
+      "Cyberdyne Crimson HUD": {
+        isInverted: true,
+        slots: {
+          "themePrimary": "#ff1e3c", "themeLighterAlt": "#0a0103", "themeLighter": "#29050a", "themeLight": "#4d0912",
+          "themeTertiary": "#991224", "themeSecondary": "#e01a35", "themeDarkAlt": "#ff3550", "themeDark": "#ff546b",
+          "themeDarker": "#ff8293", "neutralLighterAlt": "#111319", "neutralLighter": "#161922", "neutralLight": "#1f2430",
+          "neutralQuaternaryAlt": "#262b38", "neutralQuaternary": "#2c3242", "neutralTertiaryAlt": "#444c63",
+          "neutralTertiary": "#c8c8c8", "neutralSecondary": "#d0d0d0", "neutralPrimaryAlt": "#dadada",
+          "neutralPrimary": "#ffffff", "neutralDark": "#f4f4f4", "black": "#f8f8f8", "white": "#090a0d",
+          "primaryBackground": "#090a0d", "primaryText": "#ffffff", "bodyBackground": "#090a0d", "bodyText": "#ffffff",
+          "disabledBackground": "#161922", "disabledText": "#636b7b"
+        }
+      },
+      "Emerald Forest": {
+        isInverted: false,
+        slots: {
+          "themePrimary": "#107c41", "themeLighterAlt": "#f1faf3", "themeLighter": "#c8ebd3", "themeLight": "#9ddab0",
+          "themeTertiary": "#51b573", "themeSecondary": "#218c4e", "themeDarkAlt": "#0e703a", "themeDark": "#0c5e31",
+          "themeDarker": "#094624", "neutralLighterAlt": "#faf9f8", "neutralLighter": "#f3f2f1", "neutralLight": "#edebe9",
+          "neutralQuaternaryAlt": "#e1dfdd", "neutralQuaternary": "#d2d0ce", "neutralTertiaryAlt": "#c8c6c4",
+          "neutralTertiary": "#a19f9d", "neutralSecondary": "#605e5c", "neutralPrimaryAlt": "#3b3a39",
+          "neutralPrimary": "#323130", "neutralDark": "#201f1e", "black": "#000000", "white": "#ffffff",
+          "primaryBackground": "#ffffff", "primaryText": "#323130", "bodyBackground": "#ffffff", "bodyText": "#323130",
+          "disabledBackground": "#f3f2f1", "disabledText": "#a19f9d"
+        }
+      },
+      "Teal Horizon": {
+        isInverted: false,
+        slots: {
+          "themePrimary": "#038387", "themeLighterAlt": "#f1fbfc", "themeLighter": "#caf0f1", "themeLight": "#9ee2e4",
+          "themeTertiary": "#4dc2c6", "themeSecondary": "#16979b", "themeDarkAlt": "#03767a", "themeDark": "#026467",
+          "themeDarker": "#024a4c", "neutralLighterAlt": "#faf9f8", "neutralLighter": "#f3f2f1", "neutralLight": "#edebe9",
+          "neutralQuaternaryAlt": "#e1dfdd", "neutralQuaternary": "#d2d0ce", "neutralTertiaryAlt": "#c8c6c4",
+          "neutralTertiary": "#a19f9d", "neutralSecondary": "#605e5c", "neutralPrimaryAlt": "#3b3a39",
+          "neutralPrimary": "#323130", "neutralDark": "#201f1e", "black": "#000000", "white": "#ffffff",
+          "primaryBackground": "#ffffff", "primaryText": "#323130", "bodyBackground": "#ffffff", "bodyText": "#323130",
+          "disabledBackground": "#f3f2f1", "disabledText": "#a19f9d"
+        }
+      },
+      "Midnight Amethyst": {
+        isInverted: false,
+        slots: {
+          "themePrimary": "#7030a0", "themeLighterAlt": "#f8f4fb", "themeLighter": "#e4d6f0", "themeLight": "#cdb4e3",
+          "themeTertiary": "#a074c7", "themeSecondary": "#7c41ab", "themeDarkAlt": "#652b90", "themeDark": "#55247a",
+          "themeDarker": "#3f1b5a", "neutralLighterAlt": "#faf9f8", "neutralLighter": "#f3f2f1", "neutralLight": "#edebe9",
+          "neutralQuaternaryAlt": "#e1dfdd", "neutralQuaternary": "#d2d0ce", "neutralTertiaryAlt": "#c8c6c4",
+          "neutralTertiary": "#a19f9d", "neutralSecondary": "#605e5c", "neutralPrimaryAlt": "#3b3a39",
+          "neutralPrimary": "#323130", "neutralDark": "#201f1e", "black": "#000000", "white": "#ffffff",
+          "primaryBackground": "#ffffff", "primaryText": "#323130", "bodyBackground": "#ffffff", "bodyText": "#323130",
+          "disabledBackground": "#f3f2f1", "disabledText": "#a19f9d"
+        }
+      },
+      "Sunset Amber": {
+        isInverted: false,
+        slots: {
+          "themePrimary": "#d83b01", "themeLighterAlt": "#fdf5f2", "themeLighter": "#f8d8cc", "themeLight": "#f2b7a2",
+          "themeTertiary": "#e5734e", "themeSecondary": "#dc4c16", "themeDarkAlt": "#c33401", "themeDark": "#a52d01",
+          "themeDarker": "#7a2101", "neutralLighterAlt": "#faf9f8", "neutralLighter": "#f3f2f1", "neutralLight": "#edebe9",
+          "neutralQuaternaryAlt": "#e1dfdd", "neutralQuaternary": "#d2d0ce", "neutralTertiaryAlt": "#c8c6c4",
+          "neutralTertiary": "#a19f9d", "neutralSecondary": "#605e5c", "neutralPrimaryAlt": "#3b3a39",
+          "neutralPrimary": "#323130", "neutralDark": "#201f1e", "black": "#000000", "white": "#ffffff",
+          "primaryBackground": "#ffffff", "primaryText": "#323130", "bodyBackground": "#ffffff", "bodyText": "#323130",
+          "disabledBackground": "#f3f2f1", "disabledText": "#a19f9d"
+        }
+      },
+      "Obsidian Dark Executive": {
+        isInverted: true,
+        slots: {
+          "themePrimary": "#00b4d8", "themeLighterAlt": "#001014", "themeLighter": "#002830", "themeLight": "#004a5c",
+          "themeTertiary": "#007f9c", "themeSecondary": "#00a1c2", "themeDarkAlt": "#1fc1e0", "themeDark": "#4bd0e8",
+          "themeDarker": "#82e2f2", "neutralLighterAlt": "#14171f", "neutralLighter": "#1b202b", "neutralLight": "#242a38",
+          "neutralQuaternaryAlt": "#2c3344", "neutralQuaternary": "#343d52", "neutralTertiaryAlt": "#4f5a75",
+          "neutralTertiary": "#c4c8d4", "neutralSecondary": "#d2d6e0", "neutralPrimaryAlt": "#e2e5ec",
+          "neutralPrimary": "#f8f9fb", "neutralDark": "#ffffff", "black": "#ffffff", "white": "#0c0e14",
+          "primaryBackground": "#0c0e14", "primaryText": "#f8f9fb", "bodyBackground": "#0c0e14", "bodyText": "#f8f9fb",
+          "disabledBackground": "#1b202b", "disabledText": "#5a6582"
+        }
+      }
+    };
+
+    let currentPalette = { ...PRESETS["Microsoft Modern Blue"].slots };
+    let currentInverted = false;
+    let currentlyInspected = "themePrimary";
+
+    function blendHex(c1, c2, ratio) {
+      c1 = c1.replace('#', '');
+      c2 = c2.replace('#', '');
+      const r1 = parseInt(c1.substring(0,2), 16), g1 = parseInt(c1.substring(2,4), 16), b1 = parseInt(c1.substring(4,6), 16);
+      const r2 = parseInt(c2.substring(0,2), 16), g2 = parseInt(c2.substring(2,4), 16), b2 = parseInt(c2.substring(4,6), 16);
+      const r = Math.round(r1 * (1 - ratio) + r2 * ratio);
+      const g = Math.round(g1 * (1 - ratio) + g2 * ratio);
+      const b = Math.round(b1 * (1 - ratio) + b2 * ratio);
+      return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+    }
+
+    function generatePaletteFromPrimary(primary, inverted) {
+      const p = { "themePrimary": primary.toLowerCase() };
+      if (!inverted) {
+        p["themeLighterAlt"] = blendHex(primary, "#ffffff", 0.94);
+        p["themeLighter"]    = blendHex(primary, "#ffffff", 0.82);
+        p["themeLight"]      = blendHex(primary, "#ffffff", 0.65);
+        p["themeTertiary"]   = blendHex(primary, "#ffffff", 0.45);
+        p["themeSecondary"]  = blendHex(primary, "#ffffff", 0.18);
+        p["themeDarkAlt"]    = blendHex(primary, "#000000", 0.12);
+        p["themeDark"]       = blendHex(primary, "#000000", 0.25);
+        p["themeDarker"]     = blendHex(primary, "#000000", 0.42);
+
+        p["neutralLighterAlt"] = "#faf9f8"; p["neutralLighter"] = "#f3f2f1"; p["neutralLight"] = "#edebe9";
+        p["neutralQuaternaryAlt"] = "#e1dfdd"; p["neutralQuaternary"] = "#d2d0ce"; p["neutralTertiaryAlt"] = "#c8c6c4";
+        p["neutralTertiary"] = "#a19f9d"; p["neutralSecondary"] = "#605e5c"; p["neutralPrimaryAlt"] = "#3b3a39";
+        p["neutralPrimary"] = "#323130"; p["neutralDark"] = "#201f1e"; p["black"] = "#000000"; p["white"] = "#ffffff";
+        p["primaryBackground"] = "#ffffff"; p["primaryText"] = "#323130"; p["bodyBackground"] = "#ffffff"; p["bodyText"] = "#323130";
+        p["disabledBackground"] = "#f3f2f1"; p["disabledText"] = "#a19f9d";
+      } else {
+        p["themeLighterAlt"] = blendHex(primary, "#000000", 0.92);
+        p["themeLighter"]    = blendHex(primary, "#000000", 0.78);
+        p["themeLight"]      = blendHex(primary, "#000000", 0.60);
+        p["themeTertiary"]   = blendHex(primary, "#000000", 0.40);
+        p["themeSecondary"]  = blendHex(primary, "#000000", 0.15);
+        p["themeDarkAlt"]    = blendHex(primary, "#ffffff", 0.15);
+        p["themeDark"]       = blendHex(primary, "#ffffff", 0.30);
+        p["themeDarker"]     = blendHex(primary, "#ffffff", 0.50);
+
+        p["neutralLighterAlt"] = "#111319"; p["neutralLighter"] = "#161922"; p["neutralLight"] = "#1f2430";
+        p["neutralQuaternaryAlt"] = "#262b38"; p["neutralQuaternary"] = "#2c3242"; p["neutralTertiaryAlt"] = "#444c63";
+        p["neutralTertiary"] = "#c8c8c8"; p["neutralSecondary"] = "#d0d0d0"; p["neutralPrimaryAlt"] = "#dadada";
+        p["neutralPrimary"] = "#ffffff"; p["neutralDark"] = "#f4f4f4"; p["black"] = "#f8f8f8"; p["white"] = "#090a0d";
+        p["primaryBackground"] = "#090a0d"; p["primaryText"] = "#ffffff"; p["bodyBackground"] = "#090a0d"; p["bodyText"] = "#ffffff";
+        p["disabledBackground"] = "#161922"; p["disabledText"] = "#636b7b";
+      }
+      return p;
+    }
+
+    function renderSlotsList() {
+      const container = document.getElementById("slotsList");
+      container.innerHTML = "";
+      let lastCat = "";
+
+      for (const [key, meta] of Object.entries(SLOT_METADATA)) {
+        if (meta.category !== lastCat) {
+          lastCat = meta.category;
+          const catEl = document.createElement("div");
+          catEl.className = "category-divider";
+          catEl.textContent = lastCat;
+          container.appendChild(catEl);
+        }
+
+        const row = document.createElement("div");
+        row.className = "slot-row";
+        row.id = `row-${key}`;
+        row.dataset.slot = key;
+
+        const val = currentPalette[key] || "#000000";
+
+        row.innerHTML = `
+          <div class="color-swatch-wrapper">
+            <div class="color-swatch-display" id="swatch-${key}" style="background: ${val}"></div>
+            <input type="color" value="${val}" data-slot="${key}">
+          </div>
+          <div class="slot-info">
+            <div class="slot-name">${key}</div>
+            <div class="slot-role">${meta.role}</div>
+          </div>
+          <input type="text" class="slot-hex-input" id="hex-${key}" value="${val}" maxlength="7" data-slot="${key}">
+        `;
+
+        const colorInput = row.querySelector('input[type="color"]');
+        const hexInput = row.querySelector('input[type="text"]');
+
+        colorInput.addEventListener("input", (e) => {
+          const hex = e.target.value.toLowerCase();
+          currentPalette[key] = hex;
+          hexInput.value = hex;
+          row.querySelector(`#swatch-${key}`).style.background = hex;
+          updatePreview();
+          inspectSlot(key);
+        });
+
+        hexInput.addEventListener("input", (e) => {
+          let hex = e.target.value.trim().toLowerCase();
+          if (/^#?[0-9a-f]{6}$/i.test(hex)) {
+            if (!hex.startsWith('#')) hex = '#' + hex;
+            currentPalette[key] = hex;
+            colorInput.value = hex;
+            row.querySelector(`#swatch-${key}`).style.background = hex;
+            updatePreview();
+            inspectSlot(key);
+          }
+        });
+
+        row.addEventListener("mouseenter", () => inspectSlot(key));
+        row.addEventListener("click", () => inspectSlot(key));
+
+        container.appendChild(row);
+      }
+    }
+
+    function inspectSlot(slotKey) {
+      currentlyInspected = slotKey;
+      const meta = SLOT_METADATA[slotKey];
+      if (!meta) return;
+
+      const hex = currentPalette[slotKey] || "#0078d4";
+      document.getElementById("hudSwatch").style.background = hex;
+      document.getElementById("hudSlotName").textContent = slotKey;
+      document.getElementById("hudHexPill").textContent = hex.toUpperCase();
+      document.getElementById("hudCategoryBadge").textContent = meta.category;
+      document.getElementById("hudDescription").textContent = meta.role;
+
+      document.querySelectorAll(".slot-row").forEach(r => r.classList.remove("active"));
+      const targetRow = document.getElementById(`row-${slotKey}`);
+      if (targetRow) {
+        targetRow.classList.add("active");
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      document.querySelectorAll(".interactive-element").forEach(el => el.classList.remove("inspected-highlight"));
+      document.querySelectorAll(`.interactive-element[data-slot="${slotKey}"]`).forEach(el => {
+        el.classList.add("inspected-highlight");
+      });
+    }
+
+    function updatePreview() {
+      const p = currentPalette;
+      const inv = currentInverted;
+
+      const spoPage = document.getElementById("spoPage");
+      spoPage.style.background = p.white;
+      spoPage.style.borderColor = p.neutralQuaternary;
+
+      document.querySelector(".spo-suite-bar").style.background = p.themePrimary;
+      document.querySelector(".spo-site-header").style.background = p.white;
+      document.querySelector(".spo-site-header").style.borderBottomColor = p.neutralLight;
+      document.getElementById("siteTitleText").style.color = p.neutralPrimary;
+      document.getElementById("navActiveLabel").style.color = inv ? p.themeLighter : p.themeDark;
+      document.getElementById("navActiveLine").style.background = p.themePrimary;
+      document.querySelectorAll(".nav-tab").forEach(tab => tab.style.color = p.neutralSecondary);
+
+      document.getElementById("heroBanner").style.background = p.themeDarkAlt;
+      document.getElementById("heroTag").style.background = p.themeTertiary;
+      document.getElementById("heroBtnPrimary").style.background = p.themePrimary;
+      document.getElementById("heroBtnPrimary").style.color = p.white;
+      document.getElementById("heroBtnSecondary").style.background = p.neutralLighter;
+      document.getElementById("heroBtnSecondary").style.color = p.neutralPrimary;
+
+      document.getElementById("secTitle").style.color = p.neutralDark;
+      document.querySelectorAll(".ql-card").forEach(c => {
+        c.style.background = p.neutralLighterAlt;
+        c.style.borderColor = p.neutralLight;
+      });
+      document.querySelectorAll(".ql-icon-badge").forEach(i => i.style.color = p.themePrimary);
+      document.getElementById("cardTitle1").style.color = p.neutralPrimary;
+      document.getElementById("cardTitle2").style.color = p.neutralPrimary;
+      document.getElementById("cardTitle3").style.color = p.neutralPrimary;
+      document.getElementById("cardDesc1").style.color = p.neutralSecondary;
+      document.getElementById("cardDesc2").style.color = p.neutralSecondary;
+      document.getElementById("cardDesc3").style.color = p.neutralSecondary;
+
+      const docCard = document.getElementById("docLibCard");
+      docCard.style.background = p.neutralLighterAlt;
+      docCard.style.borderColor = p.neutralLight;
+      document.getElementById("btnDocNew").style.background = p.themePrimary;
+      document.getElementById("btnDocUpload").style.background = p.neutralLighter;
+      document.getElementById("btnDocUpload").style.borderColor = p.neutralQuaternary;
+      document.getElementById("rowSelected").style.background = p.themeLighterAlt;
+      document.getElementById("docName1").style.color = p.neutralPrimary;
+      document.getElementById("docTime1").style.color = p.neutralSecondary;
+
+      document.getElementById("newsH1").style.color = p.neutralDark;
+      document.getElementById("newsBody").style.color = p.neutralPrimary;
+      document.getElementById("newsLink").style.color = p.themePrimary;
+      document.getElementById("disabledChip").style.background = p.neutralLighter;
+      document.getElementById("disabledChip").style.color = p.neutralTertiary;
+      document.getElementById("newsMeta").style.color = p.neutralTertiary;
+
+      const footer = document.getElementById("spoFooter");
+      footer.style.background = p.neutralLighter;
+      footer.style.borderTopColor = p.neutralLight;
+      document.getElementById("footerText").style.color = p.neutralSecondary;
+
+      for (const [key, val] of Object.entries(p)) {
+        const sw = document.getElementById(`swatch-${key}`);
+        const hex = document.getElementById(`hex-${key}`);
+        if (sw) sw.style.background = val;
+        if (hex) hex.value = val;
+      }
+    }
+
+    document.querySelectorAll(".interactive-element, .info-pin").forEach(el => {
+      el.addEventListener("mouseenter", (e) => {
+        e.stopPropagation();
+        const slot = el.dataset.slot;
+        if (slot) inspectSlot(slot);
+      });
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const slot = el.dataset.slot;
+        if (slot) inspectSlot(slot);
+      });
+    });
+
+    document.getElementById("credentialsToggle").addEventListener("click", () => {
+      const body = document.getElementById("credentialsBody");
+      const arrow = document.getElementById("credentialsArrow");
+      const isOpen = body.classList.contains("open");
+      if (isOpen) {
+        body.classList.remove("open");
+        arrow.textContent = "[+]";
+      } else {
+        body.classList.add("open");
+        arrow.textContent = "[-]";
+      }
+    });
+
+    document.getElementById("presetSelect").addEventListener("change", (e) => {
+      const preset = PRESETS[e.target.value];
+      if (preset) {
+        currentPalette = { ...preset.slots };
+        currentInverted = preset.isInverted;
+        document.getElementById("chkIsInverted").checked = currentInverted;
+        const cleanName = e.target.value.replace(/[#%&*{}\\:<>\?\/+\|\"\(\)\[\]]/g, '');
+        document.getElementById("inputThemeName").value = `Contoso ${cleanName}`;
+        document.getElementById("quickBaseHex").value = currentPalette.themePrimary;
+        updatePreview();
+        inspectSlot("themePrimary");
+      }
+    });
+
+    document.getElementById("btnRandomize").addEventListener("click", () => {
+      const hue = Math.floor(Math.random() * 360);
+      const sat = Math.floor(Math.random() * 25 + 70);
+      const light = currentInverted ? 50 : 45;
+
+      const h = hue / 360, s = sat / 100, l = light / 100;
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      const hue2rgb = (p, q, t) => {
+        if(t < 0) t += 1;
+        if(t > 1) t -= 1;
+        if(t < 1/6) return p + (q - p) * 6 * t;
+        if(t < 1/2) return q;
+        if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const r = Math.round(hue2rgb(p, q, h + 1/3) * 255);
+      const g = Math.round(hue2rgb(p, q, h) * 255);
+      const b = Math.round(hue2rgb(p, q, h - 1/3) * 255);
+      const primary = `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+
+      currentPalette = generatePaletteFromPrimary(primary, currentInverted);
+      document.getElementById("quickBaseHex").value = primary;
+      const cleanSuffix = primary.replace('#', '').toUpperCase();
+      document.getElementById("inputThemeName").value = `Contoso Custom ${cleanSuffix}`;
+      updatePreview();
+      inspectSlot("themePrimary");
+    });
+
+    document.getElementById("btnToggleDark").addEventListener("click", () => {
+      currentInverted = !currentInverted;
+      document.getElementById("chkIsInverted").checked = currentInverted;
+      const base = currentPalette.themePrimary || "#0078d4";
+      currentPalette = generatePaletteFromPrimary(base, currentInverted);
+      updatePreview();
+      inspectSlot("themePrimary");
+    });
+
+    // Live auto-synchronization when typing base primary hex
+    document.getElementById("quickBaseHex").addEventListener("input", (e) => {
+      let base = e.target.value.trim();
+      if (/^#?[0-9a-f]{6}$/i.test(base)) {
+        if (!base.startsWith('#')) base = '#' + base;
+        currentPalette = generatePaletteFromPrimary(base, currentInverted);
+        updatePreview();
+        inspectSlot("themePrimary");
+      }
+    });
+
+    document.getElementById("btnGenFromBase").addEventListener("click", () => {
+      let base = document.getElementById("quickBaseHex").value.trim();
+      if (/^#?[0-9a-f]{6}$/i.test(base)) {
+        if (!base.startsWith('#')) base = '#' + base;
+        currentPalette = generatePaletteFromPrimary(base, currentInverted);
+        updatePreview();
+        inspectSlot("themePrimary");
+      }
+    });
+
+    function buildPowerShellScript() {
+      let rawName = document.getElementById("inputThemeName").value.trim() || "Contoso Custom Theme";
+      const themeName = rawName.replace(/[#%&*{}\:<>\?\/+\|"\(\)\[\]'\`;\$]/g, '').replace(/\s+/g, ' ').trim() || "Contoso Custom Theme";
+      const rawAdmin = document.getElementById("inputAdminUrl").value.trim();
+      const adminUrl = rawAdmin.replace(/["'\`;\$\s]/g, '').trim();
+      const rawSiteUrl = document.getElementById("inputSiteUrl").value.trim();
+      const cleanSite = rawSiteUrl ? rawSiteUrl.split(/[#\?]/)[0].trim().replace(/\/+$/, '') : '';
+      const siteUrl = cleanSite.replace(/["'\`;\$\s]/g, '').trim();
+      const inv = document.getElementById("chkIsInverted").checked ? "$true" : "$false";
+
+      const rawTenant = document.getElementById("inputTenantId").value.trim();
+      const tenantId = rawTenant.replace(/[^a-zA-Z0-9\-]/g, '').trim();
+      const rawClient = document.getElementById("inputClientId").value.trim();
+      const clientId = rawClient.replace(/[^a-zA-Z0-9\-]/g, '').trim();
+      const rawSecret = document.getElementById("inputClientSecret").value.trim();
+      const clientSecret = rawSecret.replace(/[`"]/g, '').trim();
+
+      let ps = `<#\n.SYNOPSIS\n    Registers and applies '${themeName}' theme in SharePoint Online.\n#>\n\n`;
+      const escAdmin = adminUrl.replace(/'/g, "''");
+      const escSite = siteUrl.replace(/'/g, "''");
+      const escName = themeName.replace(/'/g, "''");
+      const escTenant = tenantId.replace(/'/g, "''");
+      const escClient = clientId.replace(/'/g, "''");
+      const escSecret = clientSecret.replace(/'/g, "''");
+
+      ps += `$AdminCenterUrl = '${escAdmin}'\n$TargetSiteUrl  = '${escSite}'\n$ThemeName      = '${escName}'\n`;
+      if (tenantId) ps += `$TenantId       = '${escTenant}'\n`;
+      if (clientId) ps += `$ClientId       = '${escClient}'\n`;
+      if (clientSecret) ps += `$ClientSecret   = '${escSecret}'\n`;
+      ps += `\n$ThemePalette = @{\n`;
+      const officialSlots = ["themePrimary","themeLighterAlt","themeLighter","themeLight","themeTertiary","themeSecondary","themeDarkAlt","themeDark","themeDarker","neutralLighterAlt","neutralLighter","neutralLight","neutralQuaternaryAlt","neutralQuaternary","neutralTertiaryAlt","neutralTertiary","neutralSecondary","neutralPrimaryAlt","neutralPrimary","neutralDark","black","white"];
+      for (const k of officialSlots) {
+        let hex = currentPalette[k] || "#000000";
+        if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) hex = "#000000";
+        if (!hex.startsWith('#')) hex = '#' + hex;
+        const quotedKey = `"${k}"`.padEnd(24);
+        ps += `    ${quotedKey} = "${hex.toLowerCase()}"\n`;
+      }
+      ps += `}\n\n`;
+
+      if (clientId && clientSecret) {
+        ps += `# App-Only Service Principal Authentication\n`;
+        ps += `if (Get-Command Connect-PnPOnline -ErrorAction SilentlyContinue) {\n`;
+        ps += `    Write-Host "Connecting using Entra ID App Credentials to $AdminCenterUrl..." -ForegroundColor Cyan\n`;
+        ps += `    Connect-PnPOnline -Url $AdminCenterUrl -ClientId $ClientId -ClientSecret $ClientSecret -Tenant $TenantId\n`;
+        ps += `} else {\n`;
+        ps += `    Write-Host "Connecting to $AdminCenterUrl via Connect-SPOService..." -ForegroundColor Cyan\n`;
+        ps += `    Connect-SPOService -Url $AdminCenterUrl\n`;
+        ps += `}\n\n`;
+      } else {
+        ps += `Write-Host "Connecting interactively to $AdminCenterUrl..." -ForegroundColor Cyan\n`;
+        ps += `Connect-SPOService -Url $AdminCenterUrl\n\n`;
+      }
+
+      ps += `Write-Host "Registering theme '$ThemeName' in tenant catalog..." -ForegroundColor Cyan\n`;
+      ps += `try {\n`;
+      ps += `    Add-SPOTheme -Identity $ThemeName -Palette $ThemePalette -IsInverted ${inv} -ErrorAction Stop\n`;
+      ps += `    Write-Host "Theme '$ThemeName' successfully registered in tenant." -ForegroundColor Green\n`;
+      ps += `} catch {\n`;
+      ps += `    Write-Host "Theme '$ThemeName' already exists. Updating with -Overwrite..." -ForegroundColor Yellow\n`;
+      ps += `    Add-SPOTheme -Identity $ThemeName -Palette $ThemePalette -IsInverted ${inv} -Overwrite\n`;
+      ps += `    Write-Host "Theme '$ThemeName' successfully updated." -ForegroundColor Green\n`;
+      ps += `}\n\n`;
+
+      ps += `if (-not [string]::IsNullOrWhiteSpace($TargetSiteUrl)) {\n`;
+      ps += `    $cleanSiteUrl = ($TargetSiteUrl -split '[#\\?]')[0].Trim().TrimEnd('/')\n`;
+      ps += `    $applied = $false\n`;
+      ps += `    for ($attempt = 1; $attempt -le 4; $attempt++) {\n`;
+      ps += `        try {\n`;
+      ps += `            Write-Host "Applying '$ThemeName' to $cleanSiteUrl (Attempt $attempt of 4)..." -ForegroundColor Cyan\n`;
+      ps += `            Set-SPOWebTheme -Theme $ThemeName -Web $cleanSiteUrl -ErrorAction Stop\n`;
+      ps += `            $applied = $true\n`;
+      ps += `            Write-Host "Success! Theme '$ThemeName' is active on $cleanSiteUrl." -ForegroundColor Green\n`;
+      ps += `            Write-Host "Tip: Hard refresh in your browser (Ctrl + F5) to load the new theme tokens." -ForegroundColor Yellow\n`;
+      ps += `            break\n`;
+      ps += `        } catch {\n`;
+      ps += `            if ($_.Exception.Message -like "*ThemeNotFoundWhenSetThemeToWeb*" -and $attempt -lt 4) {\n`;
+      ps += `                Write-Host "Tenant catalog replication pending. Retrying in 3 seconds..." -ForegroundColor Yellow\n`;
+      ps += `                Start-Sleep -Seconds 3\n`;
+      ps += `            } else {\n`;
+      ps += `                Write-Host "Failed to apply theme to $cleanSiteUrl : $_" -ForegroundColor Red\n`;
+      ps += `                Write-Host "Tip: Verify the site URL in your browser. Common paths include '/sites/yourSite' or '/teams/yourSite'." -ForegroundColor Yellow\n`;
+      ps += `                Write-Host "Note: The theme is registered in tenant catalog! You can also apply it via SharePoint web UI: Settings -> Change the look -> Theme." -ForegroundColor Cyan\n`;
+      ps += `                break\n`;
+      ps += `            }\n`;
+      ps += `        }\n`;
+      ps += `    }\n`;
+      ps += `} else {\n`;
+      ps += `    Write-Host "Theme '$ThemeName' is registered. Apply via site settings or Set-SPOWebTheme." -ForegroundColor Green\n`;
+      ps += `}\n`;
+      return ps;
+    }
+
+    const modal = document.getElementById("modalOverlay");
+    document.getElementById("btnExportScript").addEventListener("click", () => {
+      document.getElementById("modalTitle").textContent = "PowerShell Add-SPOTheme Deployment Script";
+      document.getElementById("modalCode").value = buildPowerShellScript();
+      modal.style.display = "flex";
+    });
+    document.getElementById("btnCopyPs1").addEventListener("click", () => {
+      navigator.clipboard.writeText(buildPowerShellScript()).then(() => alert("PowerShell Add-SPOTheme script copied to clipboard!"));
+    });
+    document.getElementById("btnCopyJson").addEventListener("click", () => {
+      navigator.clipboard.writeText(JSON.stringify(currentPalette, null, 2)).then(() => alert("Theme JSON Palette copied to clipboard!"));
+    });
+    document.getElementById("btnCloseModal").addEventListener("click", () => modal.style.display = "none");
+    document.getElementById("btnModalCopy").addEventListener("click", () => {
+      navigator.clipboard.writeText(document.getElementById("modalCode").value).then(() => alert("Copied to clipboard!"));
+    });
+
+    document.getElementById("slotSearch").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll(".slot-row").forEach(row => {
+        const slot = row.dataset.slot.toLowerCase();
+        const meta = SLOT_METADATA[row.dataset.slot];
+        const match = slot.includes(q) || meta.role.toLowerCase().includes(q) || meta.category.toLowerCase().includes(q);
+        row.style.display = match ? "grid" : "none";
+      });
+    });
+
+    renderSlotsList();
+    updatePreview();
+    inspectSlot("themePrimary");
+  </script>
+</body>
+</html>

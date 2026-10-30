@@ -1,0 +1,61 @@
+name: SPO Theme Studio CI/CD
+
+on:
+  push:
+    branches: [ main, release/* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-and-test:
+    name: Code Quality & AST Verification
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run PSScriptAnalyzer
+        shell: powershell
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force
+          $results = Invoke-ScriptAnalyzer -Path .\SPOThemeStudio.ps1 -Severity Error, Warning -Settings .\PSScriptAnalyzerSettings.psd1
+          if ($results.Count -gt 0) {
+              $results | Format-Table -AutoSize
+              throw "PSScriptAnalyzer detected $($results.Count) issues."
+          }
+          Write-Host "PSScriptAnalyzer passed cleanly." -ForegroundColor Green
+
+      - name: Run WPF Lifecycle & AST Regression Test
+        shell: powershell
+        run: |
+          $testResult = powershell.exe -ExecutionPolicy Bypass -File .\Test-SPOThemeStudio.ps1
+          Write-Host $testResult
+          if ($LASTEXITCODE -ne 0) {
+              throw "Automated regression tests failed with exit code $LASTEXITCODE."
+          }
+
+      - name: Validate Generated Deployment Script Syntax
+        shell: powershell
+        run: |
+          $code = Get-Content -Raw -Path .\SPOThemeStudio.ps1
+          $codeWithoutShow = $code -replace '\$window\.ShowDialog\(\)\s*\|\s*Out-Null', '# suppressed'
+          . ([scriptblock]::Create($codeWithoutShow))
+          $generatedScript = Generate-PowerShellScript
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($generatedScript, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+              throw "Generated script failed AST validation with $($errors.Count) errors."
+          }
+          Write-Host "Generated script passed AST parser verification." -ForegroundColor Green
+
+      - name: Archive Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SharePoint-Theme-Studio-Package
+          path: |
+            SharePoint-Theme-Studio/SPOThemeStudio.ps1
+            SharePoint-Theme-Studio/SPO-Theme-Studio-Interactive.html
+            SharePoint-Theme-Studio/README.md
+            SharePoint-Theme-Studio/DOCUMENTATION.md

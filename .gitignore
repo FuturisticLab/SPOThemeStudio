@@ -1,0 +1,23 @@
+# Windows & Visual Studio
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Editor & IDE artifacts
+.vscode/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# PowerShell Temporary & Local Deployment Scripts
+Deploy-*.ps1
+*.tmp
+*.temp
+*.log
+*.bak
+
+# OS generated
+.DS_Store
